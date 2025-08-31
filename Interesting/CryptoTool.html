@@ -217,6 +217,187 @@
         margin-top: 20px;
       }
 
+      .function-input-wrapper {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+      }
+
+      .function-input-wrapper .input-field {
+        flex: 1;
+      }
+
+      .edit-function-btn {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        white-space: nowrap;
+      }
+
+      .edit-function-btn:hover {
+        transform: translateY(-2px);
+      }
+
+      /* 函数编辑器模态框样式 */
+      .function-editor-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .function-editor-content {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 900px;
+        width: 90%;
+        max-height: 90vh;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .function-editor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .function-editor-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .close-btn {
+        background: #ff4757;
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .close-btn:hover {
+        background: #ff3742;
+      }
+
+      .function-canvas-container {
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        background: #f9f9f9;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
+        overflow: hidden;
+        flex: 1;
+        min-height: 0;
+      }
+
+      .function-canvas {
+        display: block;
+        cursor: crosshair;
+        border-radius: 8px;
+        background: white;
+        max-width: 100%;
+        height: auto;
+      }
+
+      .function-info {
+        background: #f0f4ff;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+
+      .current-function {
+        font-family: "Courier New", monospace;
+        font-size: 18px;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 10px;
+      }
+
+      .function-instructions {
+        font-size: 14px;
+        color: #666;
+        line-height: 1.5;
+      }
+
+      .function-controls {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .control-btn {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      .control-btn:hover {
+        background: #5a6fd8;
+      }
+
+      .control-btn.danger {
+        background: #ff4757;
+      }
+
+      .control-btn.danger:hover {
+        background: #ff3742;
+      }
+
+      .control-btn.success {
+        background: #2ed573;
+      }
+
+      .control-btn.success:hover {
+        background: #26d467;
+      }
+
+      .point-info {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        pointer-events: none;
+        display: none;
+        z-index: 1001;
+        white-space: nowrap;
+      }
+
       @media (max-width: 768px) {
         .container {
           padding: 20px;
@@ -229,6 +410,20 @@
         .steps-container {
           grid-template-columns: 1fr;
         }
+
+        .function-input-wrapper {
+          flex-direction: column;
+        }
+
+        .function-editor-content {
+          width: 95%;
+          padding: 20px;
+          max-height: 95vh;
+        }
+
+        .function-controls {
+          flex-direction: column;
+        }
       }
     </style>
   </head>
@@ -238,12 +433,17 @@
 
       <div class="input-section">
         <label class="input-label">数学函数表达式</label>
-        <input
-          type="text"
-          id="mathFunction"
-          class="input-field"
-          placeholder="例如: x*2+1, sin(x), x^2, etc."
-        />
+        <div class="function-input-wrapper">
+          <input
+            type="text"
+            id="mathFunction"
+            class="input-field"
+            placeholder="例如: x*2+1, sin(x), x^2, etc."
+          />
+          <button id="editFunctionBtn" class="edit-function-btn">
+            📊 可视化编辑
+          </button>
+        </div>
         <div class="function-examples">
           <strong>支持的函数:</strong> +, -, *, /, ^(幂), sin, cos, tan, log,
           sqrt, abs, floor, ceil<br />
@@ -291,6 +491,44 @@
       </div>
 
       <div id="errorMessage" class="error-message" style="display: none"></div>
+    </div>
+
+    <!-- 函数编辑器模态框 -->
+    <div id="functionEditorModal" class="function-editor-modal">
+      <div class="function-editor-content">
+        <div class="function-editor-header">
+          <h2 class="function-editor-title">可视化函数编辑器</h2>
+          <button id="closeFunctionEditor" class="close-btn">×</button>
+        </div>
+
+        <div class="function-info">
+          <div class="current-function" id="currentFunctionDisplay">
+            f(x) = x
+          </div>
+          <div class="function-instructions">
+            <strong>使用说明：</strong><br />
+            • 点击坐标系添加控制点<br />
+            • 拖拽点来调整位置<br />
+            • 右键点击删除点<br />
+            • 函数会自动拟合通过所有点
+          </div>
+        </div>
+
+        <div class="function-canvas-container">
+          <canvas id="functionCanvas" class="function-canvas"></canvas>
+        </div>
+        <div id="pointInfo" class="point-info"></div>
+
+        <div class="function-controls">
+          <button id="clearPoints" class="control-btn danger">
+            清除所有点
+          </button>
+          <button id="resetView" class="control-btn">重置视图</button>
+          <button id="applyFunction" class="control-btn success">
+            应用函数
+          </button>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -598,6 +836,885 @@
       // 输入时隐藏错误信息
       mathFunctionInput.addEventListener("input", hideError);
       inputTextArea.addEventListener("input", hideError);
+
+      // 函数编辑器相关变量和函数
+      const editFunctionBtn = document.getElementById("editFunctionBtn");
+      const functionEditorModal = document.getElementById(
+        "functionEditorModal"
+      );
+      const closeFunctionEditor = document.getElementById(
+        "closeFunctionEditor"
+      );
+      const functionCanvas = document.getElementById("functionCanvas");
+      const ctx = functionCanvas.getContext("2d");
+      const currentFunctionDisplay = document.getElementById(
+        "currentFunctionDisplay"
+      );
+      const clearPointsBtn = document.getElementById("clearPoints");
+      const resetViewBtn = document.getElementById("resetView");
+      const applyFunctionBtn = document.getElementById("applyFunction");
+      const pointInfo = document.getElementById("pointInfo");
+
+      let points = [];
+      let draggedPoint = null;
+      let canvasRect = null;
+      let currentFunction = "x";
+
+      // 坐标系参数
+      let canvasWidth = 800;
+      let canvasHeight = 400;
+      let centerX = canvasWidth / 2;
+      let centerY = canvasHeight / 2;
+      const scale = 6; // 每单位的像素数 (30/5 = 6，这样5个单位占30像素)
+      const gridSize = 5; // 网格间距改为5个单位
+
+      // 设置高DPI画布
+      function setupCanvas() {
+        const container = functionCanvas.parentElement;
+        const containerWidth = container.clientWidth - 20; // 减去padding
+        const containerHeight = Math.min(400, containerWidth * 0.5); // 保持比例
+
+        // 设置显示尺寸
+        functionCanvas.style.width = containerWidth + "px";
+        functionCanvas.style.height = containerHeight + "px";
+
+        // 获取设备像素比
+        const dpr = window.devicePixelRatio || 1;
+
+        // 设置实际画布尺寸
+        canvasWidth = containerWidth * dpr;
+        canvasHeight = containerHeight * dpr;
+        functionCanvas.width = canvasWidth;
+        functionCanvas.height = canvasHeight;
+
+        // 缩放上下文以匹配设备像素比
+        ctx.scale(dpr, dpr);
+
+        // 更新中心点
+        centerX = containerWidth / 2;
+        centerY = containerHeight / 2;
+      }
+
+      // 打开函数编辑器
+      function openFunctionEditor() {
+        functionEditorModal.style.display = "flex";
+        setupCanvas();
+        drawCanvas();
+      }
+
+      // 关闭函数编辑器
+      function closeFunctionEditorModal() {
+        functionEditorModal.style.display = "none";
+      }
+
+      // 绘制画布
+      function drawCanvas() {
+        const displayWidth = functionCanvas.clientWidth;
+        const displayHeight = functionCanvas.clientHeight;
+
+        ctx.clearRect(0, 0, displayWidth, displayHeight);
+
+        // 绘制网格
+        drawGrid();
+
+        // 绘制坐标轴
+        drawAxes();
+
+        // 绘制当前函数曲线
+        drawFunctionCurve();
+
+        // 绘制控制点
+        drawPoints();
+      }
+
+      // 绘制网格
+      function drawGrid() {
+        const displayWidth = functionCanvas.clientWidth;
+        const displayHeight = functionCanvas.clientHeight;
+
+        ctx.strokeStyle = "#e0e0e0";
+        ctx.lineWidth = 0.5;
+
+        // 垂直网格线
+        for (
+          let x = centerX % (scale * gridSize);
+          x < displayWidth;
+          x += scale * gridSize
+        ) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, displayHeight);
+          ctx.stroke();
+        }
+
+        // 水平网格线
+        for (
+          let y = centerY % (scale * gridSize);
+          y < displayHeight;
+          y += scale * gridSize
+        ) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(displayWidth, y);
+          ctx.stroke();
+        }
+      }
+
+      // 绘制坐标轴
+      function drawAxes() {
+        const displayWidth = functionCanvas.clientWidth;
+        const displayHeight = functionCanvas.clientHeight;
+
+        ctx.strokeStyle = "#333";
+        ctx.lineWidth = 2;
+
+        // X轴
+        ctx.beginPath();
+        ctx.moveTo(0, centerY);
+        ctx.lineTo(displayWidth, centerY);
+        ctx.stroke();
+
+        // Y轴
+        ctx.beginPath();
+        ctx.moveTo(centerX, 0);
+        ctx.lineTo(centerX, displayHeight);
+        ctx.stroke();
+
+        // 绘制刻度
+        ctx.fillStyle = "#666";
+        ctx.font = "12px Arial";
+        ctx.textAlign = "center";
+
+        // X轴刻度 - 只显示5的倍数
+        for (
+          let i = -Math.floor(centerX / scale);
+          i <= Math.floor((displayWidth - centerX) / scale);
+          i++
+        ) {
+          if (i !== 0 && i % 5 === 0) {
+            const x = centerX + i * scale;
+            ctx.fillText(i.toString(), x, centerY + 15);
+          }
+        }
+
+        // Y轴刻度 - 只显示5的倍数
+        ctx.textAlign = "right";
+        for (
+          let i = -Math.floor((displayHeight - centerY) / scale);
+          i <= Math.floor(centerY / scale);
+          i++
+        ) {
+          if (i !== 0 && i % 5 === 0) {
+            const y = centerY - i * scale;
+            ctx.fillText(i.toString(), centerX - 5, y + 4);
+          }
+        }
+      }
+
+      // 绘制函数曲线
+      function drawFunctionCurve() {
+        if (points.length === 0) return;
+
+        const displayWidth = functionCanvas.clientWidth;
+        const displayHeight = functionCanvas.clientHeight;
+
+        ctx.strokeStyle = "#667eea";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+
+        let firstPoint = true;
+        let lastValidY = null;
+
+        for (let pixelX = 0; pixelX < displayWidth; pixelX += 2) {
+          const mathX = (pixelX - centerX) / scale;
+          const mathY = evaluateCurrentFunction(mathX);
+
+          if (isFinite(mathY)) {
+            const pixelY = centerY - mathY * scale;
+
+            // 限制Y值在合理范围内，避免极端振荡
+            const clampedPixelY = Math.max(
+              -displayHeight,
+              Math.min(displayHeight * 2, pixelY)
+            );
+
+            if (firstPoint) {
+              ctx.moveTo(pixelX, clampedPixelY);
+              firstPoint = false;
+            } else {
+              // 如果Y值变化太剧烈，断开连线
+              if (
+                lastValidY !== null &&
+                Math.abs(clampedPixelY - lastValidY) > displayHeight
+              ) {
+                ctx.moveTo(pixelX, clampedPixelY);
+              } else {
+                ctx.lineTo(pixelX, clampedPixelY);
+              }
+            }
+            lastValidY = clampedPixelY;
+          }
+        }
+
+        ctx.stroke();
+      }
+
+      // 绘制控制点
+      function drawPoints() {
+        points.forEach((point, index) => {
+          const pixelX = centerX + point.x * scale;
+          const pixelY = centerY - point.y * scale;
+
+          // 绘制点
+          ctx.fillStyle = "#ff4757";
+          ctx.beginPath();
+          ctx.arc(pixelX, pixelY, 6, 0, 2 * Math.PI);
+          ctx.fill();
+
+          // 绘制边框
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // 绘制坐标标签
+          ctx.fillStyle = "#333";
+          ctx.font = "11px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText(
+            `(${point.x.toFixed(0)}, ${point.y.toFixed(0)})`,
+            pixelX,
+            pixelY - 10
+          );
+        });
+      }
+
+      // 计算当前函数值
+      function evaluateCurrentFunction(x) {
+        if (points.length === 0) return x;
+        if (points.length === 1) return points[0].y;
+
+        try {
+          // 对于2个点，使用线性插值
+          if (points.length === 2) {
+            const p1 = points[0];
+            const p2 = points[1];
+            if (Math.abs(p1.x - p2.x) < 0.001) return p1.y;
+            const slope = (p2.y - p1.y) / (p2.x - p1.x);
+            return p1.y + slope * (x - p1.x);
+          }
+
+          // 对于3个点，使用二次插值
+          if (points.length === 3) {
+            const sortedPoints = [...points].sort((a, b) => a.x - b.x);
+            const [p1, p2, p3] = sortedPoints;
+
+            const denom = (p1.x - p2.x) * (p1.x - p3.x) * (p2.x - p3.x);
+            if (Math.abs(denom) < 0.001) return points[0].y;
+
+            const a =
+              (p3.x * (p2.y - p1.y) +
+                p2.x * (p1.y - p3.y) +
+                p1.x * (p3.y - p2.y)) /
+              denom;
+            const b =
+              (p3.x * p3.x * (p1.y - p2.y) +
+                p2.x * p2.x * (p3.y - p1.y) +
+                p1.x * p1.x * (p2.y - p3.y)) /
+              denom;
+            const c =
+              (p2.x * p3.x * (p2.x - p3.x) * p1.y +
+                p3.x * p1.x * (p3.x - p1.x) * p2.y +
+                p1.x * p2.x * (p1.x - p2.x) * p3.y) /
+              denom;
+
+            return a * x * x + b * x + c;
+          }
+
+          // 对于更多点，使用限制范围的拉格朗日插值
+          let result = 0;
+          for (let i = 0; i < points.length; i++) {
+            let term = points[i].y;
+            let denomProduct = 1;
+
+            for (let j = 0; j < points.length; j++) {
+              if (i !== j) {
+                const denomFactor = points[i].x - points[j].x;
+                if (Math.abs(denomFactor) < 0.001) return points[i].y; // 避免除零
+                denomProduct *= denomFactor;
+                term *= x - points[j].x;
+              }
+            }
+
+            if (Math.abs(denomProduct) > 0.001) {
+              term /= denomProduct;
+              result += term;
+            }
+          }
+
+          // 限制结果范围，避免极端值
+          const minY = Math.min(...points.map((p) => p.y));
+          const maxY = Math.max(...points.map((p) => p.y));
+          const range = maxY - minY;
+          const clampedResult = Math.max(
+            minY - range * 2,
+            Math.min(maxY + range * 2, result)
+          );
+
+          return clampedResult;
+        } catch (error) {
+          return points[0]?.y || 0;
+        }
+      }
+
+      // 生成函数表达式
+      function generateFunctionExpression() {
+        if (points.length === 0) {
+          return "x";
+        }
+
+        if (points.length === 1) {
+          return points[0].y.toFixed(2);
+        }
+
+        if (points.length === 2) {
+          const p1 = points[0];
+          const p2 = points[1];
+
+          if (Math.abs(p1.x - p2.x) < 0.001) {
+            return points[0].y.toFixed(2); // 垂直线，返回常数
+          }
+
+          const slope = (p2.y - p1.y) / (p2.x - p1.x);
+          const intercept = p1.y - slope * p1.x;
+
+          if (Math.abs(intercept) < 0.01) {
+            return `${slope.toFixed(2)}*x`;
+          } else if (intercept > 0) {
+            return `${slope.toFixed(2)}*x+${intercept.toFixed(2)}`;
+          } else {
+            return `${slope.toFixed(2)}*x${intercept.toFixed(2)}`;
+          }
+        }
+
+        // 对于3个点，拟合二次函数
+        if (points.length === 3) {
+          return fitPolynomial();
+        }
+
+        // 对于更多点，尝试拟合简单的多项式或显示近似表达式
+        if (points.length >= 4) {
+          return generateApproximateExpression();
+        }
+
+        return "x"; // 默认返回
+      }
+
+      // 拟合多项式
+      function fitPolynomial() {
+        const sortedPoints = [...points].sort((a, b) => a.x - b.x);
+
+        // 尝试二次函数拟合
+        if (sortedPoints.length === 3) {
+          const [p1, p2, p3] = sortedPoints;
+
+          // 解二次方程组 ax² + bx + c = y
+          const x1 = p1.x,
+            y1 = p1.y;
+          const x2 = p2.x,
+            y2 = p2.y;
+          const x3 = p3.x,
+            y3 = p3.y;
+
+          const denom = (x1 - x2) * (x1 - x3) * (x2 - x3);
+          if (Math.abs(denom) < 0.001) return "x";
+
+          const a = (x3 * (y2 - y1) + x2 * (y1 - y3) + x1 * (y3 - y2)) / denom;
+          const b =
+            (x3 * x3 * (y1 - y2) + x2 * x2 * (y3 - y1) + x1 * x1 * (y2 - y3)) /
+            denom;
+          const c =
+            (x2 * x3 * (x2 - x3) * y1 +
+              x3 * x1 * (x3 - x1) * y2 +
+              x1 * x2 * (x1 - x2) * y3) /
+            denom;
+
+          let expr = "";
+          if (Math.abs(a) > 0.01) {
+            expr += `${a.toFixed(2)}*x^2`;
+          }
+          if (Math.abs(b) > 0.01) {
+            if (expr && b > 0) expr += "+";
+            expr += `${b.toFixed(2)}*x`;
+          }
+          if (Math.abs(c) > 0.01) {
+            if (expr && c > 0) expr += "+";
+            expr += c.toFixed(2);
+          }
+
+          return expr || "0";
+        }
+
+        return "x";
+      }
+
+      // 生成近似表达式（用于4个或更多点）
+      function generateApproximateExpression() {
+        const sortedPoints = [...points].sort((a, b) => a.x - b.x);
+
+        // 尝试检测函数类型
+        const xValues = sortedPoints.map((p) => p.x);
+        const yValues = sortedPoints.map((p) => p.y);
+
+        // 检查是否接近线性
+        if (isApproximatelyLinear(sortedPoints)) {
+          const firstPoint = sortedPoints[0];
+          const lastPoint = sortedPoints[sortedPoints.length - 1];
+          const slope =
+            (lastPoint.y - firstPoint.y) / (lastPoint.x - firstPoint.x);
+          const intercept = firstPoint.y - slope * firstPoint.x;
+
+          if (Math.abs(intercept) < 0.01) {
+            return `${slope.toFixed(2)}*x`;
+          } else if (intercept > 0) {
+            return `${slope.toFixed(2)}*x+${intercept.toFixed(2)}`;
+          } else {
+            return `${slope.toFixed(2)}*x${intercept.toFixed(2)}`;
+          }
+        }
+
+        // 检查是否接近二次函数
+        if (
+          sortedPoints.length >= 4 &&
+          isApproximatelyQuadratic(sortedPoints)
+        ) {
+          const quadratic = fitQuadraticApprox(sortedPoints);
+          return quadratic;
+        }
+
+        // 检查是否接近正弦函数
+        if (isApproximatelySinusoidal(sortedPoints)) {
+          const sinParams = fitSinusoidal(sortedPoints);
+          return sinParams;
+        }
+
+        // 检查是否接近指数函数
+        if (isApproximatelyExponential(sortedPoints)) {
+          return "指数函数近似";
+        }
+
+        // 默认计算拉格朗日插值多项式
+        return calculateLagrangePolynomial();
+      }
+
+      // 检查是否接近线性
+      function isApproximatelyLinear(points) {
+        if (points.length < 3) return true;
+
+        const firstPoint = points[0];
+        const lastPoint = points[points.length - 1];
+        const expectedSlope =
+          (lastPoint.y - firstPoint.y) / (lastPoint.x - firstPoint.x);
+
+        let maxDeviation = 0;
+        for (let i = 1; i < points.length - 1; i++) {
+          const expectedY =
+            firstPoint.y + expectedSlope * (points[i].x - firstPoint.x);
+          const deviation = Math.abs(points[i].y - expectedY);
+          maxDeviation = Math.max(maxDeviation, deviation);
+        }
+
+        const range = Math.abs(lastPoint.y - firstPoint.y);
+        return maxDeviation < Math.max(0.5, range * 0.1);
+      }
+
+      // 检查是否接近二次函数
+      function isApproximatelyQuadratic(points) {
+        if (points.length < 4) return false;
+
+        // 使用前三个点拟合二次函数，检查其他点的偏差
+        const [p1, p2, p3] = points.slice(0, 3);
+
+        const denom = (p1.x - p2.x) * (p1.x - p3.x) * (p2.x - p3.x);
+        if (Math.abs(denom) < 0.001) return false;
+
+        const a =
+          (p3.x * (p2.y - p1.y) + p2.x * (p1.y - p3.y) + p1.x * (p3.y - p2.y)) /
+          denom;
+        const b =
+          (p3.x * p3.x * (p1.y - p2.y) +
+            p2.x * p2.x * (p3.y - p1.y) +
+            p1.x * p1.x * (p2.y - p3.y)) /
+          denom;
+        const c =
+          (p2.x * p3.x * (p2.x - p3.x) * p1.y +
+            p3.x * p1.x * (p3.x - p1.x) * p2.y +
+            p1.x * p2.x * (p1.x - p2.x) * p3.y) /
+          denom;
+
+        let maxDeviation = 0;
+        for (let i = 3; i < points.length; i++) {
+          const x = points[i].x;
+          const expectedY = a * x * x + b * x + c;
+          const deviation = Math.abs(points[i].y - expectedY);
+          maxDeviation = Math.max(maxDeviation, deviation);
+        }
+
+        const yRange =
+          Math.max(...points.map((p) => p.y)) -
+          Math.min(...points.map((p) => p.y));
+        return maxDeviation < Math.max(0.5, yRange * 0.15);
+      }
+
+      // 拟合二次函数近似
+      function fitQuadraticApprox(points) {
+        const [p1, p2, p3] = points.slice(0, 3);
+
+        const denom = (p1.x - p2.x) * (p1.x - p3.x) * (p2.x - p3.x);
+        if (Math.abs(denom) < 0.001) return "x";
+
+        const a =
+          (p3.x * (p2.y - p1.y) + p2.x * (p1.y - p3.y) + p1.x * (p3.y - p2.y)) /
+          denom;
+        const b =
+          (p3.x * p3.x * (p1.y - p2.y) +
+            p2.x * p2.x * (p3.y - p1.y) +
+            p1.x * p1.x * (p2.y - p3.y)) /
+          denom;
+        const c =
+          (p2.x * p3.x * (p2.x - p3.x) * p1.y +
+            p3.x * p1.x * (p3.x - p1.x) * p2.y +
+            p1.x * p2.x * (p1.x - p2.x) * p3.y) /
+          denom;
+
+        let expr = "";
+        if (Math.abs(a) > 0.01) {
+          expr += `${a.toFixed(2)}*x^2`;
+        }
+        if (Math.abs(b) > 0.01) {
+          if (expr && b > 0) expr += "+";
+          expr += `${b.toFixed(2)}*x`;
+        }
+        if (Math.abs(c) > 0.01) {
+          if (expr && c > 0) expr += "+";
+          expr += c.toFixed(2);
+        }
+
+        return expr || "0";
+      }
+
+      // 检查是否接近正弦函数
+      function isApproximatelySinusoidal(points) {
+        if (points.length < 6) return false;
+
+        // 简单检查：看是否有周期性振荡
+        const yValues = points.map((p) => p.y);
+        const yMean = yValues.reduce((a, b) => a + b) / yValues.length;
+
+        let crossings = 0;
+        let lastSign = yValues[0] > yMean ? 1 : -1;
+
+        for (let i = 1; i < yValues.length; i++) {
+          const currentSign = yValues[i] > yMean ? 1 : -1;
+          if (currentSign !== lastSign) {
+            crossings++;
+            lastSign = currentSign;
+          }
+        }
+
+        return crossings >= 4; // 至少2个完整周期
+      }
+
+      // 拟合正弦函数
+      function fitSinusoidal(points) {
+        const yValues = points.map((p) => p.y);
+        const amplitude = (Math.max(...yValues) - Math.min(...yValues)) / 2;
+        const offset = (Math.max(...yValues) + Math.min(...yValues)) / 2;
+
+        // 估算频率（简化）
+        const xRange = points[points.length - 1].x - points[0].x;
+        const frequency = (2 * Math.PI) / (xRange / 2); // 假设2个周期
+
+        if (Math.abs(offset) < 0.01) {
+          return `${amplitude.toFixed(2)}*sin(${frequency.toFixed(2)}*x)`;
+        } else if (offset > 0) {
+          return `${amplitude.toFixed(2)}*sin(${frequency.toFixed(
+            2
+          )}*x)+${offset.toFixed(2)}`;
+        } else {
+          return `${amplitude.toFixed(2)}*sin(${frequency.toFixed(
+            2
+          )}*x)${offset.toFixed(2)}`;
+        }
+      }
+
+      // 检查是否接近指数函数
+      function isApproximatelyExponential(points) {
+        if (points.length < 4) return false;
+
+        // 检查y值是否呈指数增长或衰减
+        const yValues = points.map((p) => p.y);
+        if (yValues.some((y) => y <= 0)) return false; // 指数函数必须为正
+
+        const logYValues = yValues.map((y) => Math.log(y));
+        return isApproximatelyLinear(
+          points.map((p, i) => ({ x: p.x, y: logYValues[i] }))
+        );
+      }
+
+      // 计算拉格朗日插值多项式的具体表达式
+      function calculateLagrangePolynomial() {
+        if (points.length === 0) return "x";
+        if (points.length === 1) return points[0].y.toFixed(2);
+
+        // 初始化多项式系数数组 (从常数项到最高次项)
+        const degree = points.length - 1;
+        const coefficients = new Array(degree + 1).fill(0);
+
+        // 对每个点计算其拉格朗日基函数的贡献
+        for (let i = 0; i < points.length; i++) {
+          const xi = points[i].x;
+          const yi = points[i].y;
+
+          // 计算第i个拉格朗日基函数 Li(x)
+          const baseCoeffs = calculateLagrangeBasis(i);
+
+          // 将 yi * Li(x) 加到总多项式中
+          for (let j = 0; j < baseCoeffs.length; j++) {
+            coefficients[j] += yi * baseCoeffs[j];
+          }
+        }
+
+        // 格式化多项式表达式
+        return formatPolynomialFromCoeffs(coefficients);
+      }
+
+      // 计算第i个拉格朗日基函数的系数
+      function calculateLagrangeBasis(i) {
+        const xi = points[i].x;
+        const degree = points.length - 1;
+
+        // 开始时基函数是常数1
+        let coeffs = [1]; // 表示多项式 1
+
+        // 逐个乘以 (x - xj) / (xi - xj) 其中 j != i
+        for (let j = 0; j < points.length; j++) {
+          if (i !== j) {
+            const xj = points[j].x;
+            const denominator = xi - xj;
+
+            if (Math.abs(denominator) < 1e-10) continue; // 避免除零
+
+            // 将当前多项式乘以 (x - xj) / (xi - xj)
+            coeffs = multiplyPolynomial(coeffs, [
+              -xj / denominator,
+              1 / denominator,
+            ]);
+          }
+        }
+
+        // 确保系数数组长度正确
+        while (coeffs.length <= degree) {
+          coeffs.push(0);
+        }
+
+        return coeffs;
+      }
+
+      // 多项式乘法：将两个多项式相乘
+      function multiplyPolynomial(poly1, poly2) {
+        const result = new Array(poly1.length + poly2.length - 1).fill(0);
+
+        for (let i = 0; i < poly1.length; i++) {
+          for (let j = 0; j < poly2.length; j++) {
+            result[i + j] += poly1[i] * poly2[j];
+          }
+        }
+
+        return result;
+      }
+
+      // 格式化多项式系数为表达式
+      function formatPolynomialFromCoeffs(coeffs) {
+        let expr = "";
+
+        // 从最高次项开始
+        for (let i = coeffs.length - 1; i >= 0; i--) {
+          const coeff = coeffs[i];
+
+          // 跳过接近零的系数
+          if (Math.abs(coeff) < 0.001) continue;
+
+          // 添加符号
+          if (expr.length > 0) {
+            expr += coeff > 0 ? "+" : "";
+          }
+
+          // 格式化系数和变量
+          if (i === 0) {
+            // 常数项
+            expr += coeff.toFixed(2);
+          } else if (i === 1) {
+            // 一次项
+            if (Math.abs(coeff - 1) < 0.001) {
+              expr += "x";
+            } else if (Math.abs(coeff + 1) < 0.001) {
+              expr += "-x";
+            } else {
+              expr += `${coeff.toFixed(2)}*x`;
+            }
+          } else {
+            // 高次项
+            if (Math.abs(coeff - 1) < 0.001) {
+              expr += `x^${i}`;
+            } else if (Math.abs(coeff + 1) < 0.001) {
+              expr += `-x^${i}`;
+            } else {
+              expr += `${coeff.toFixed(2)}*x^${i}`;
+            }
+          }
+        }
+
+        return expr || "0";
+      }
+
+      // 更新函数显示
+      function updateFunctionDisplay() {
+        currentFunction = generateFunctionExpression();
+        currentFunctionDisplay.textContent = `f(x) = ${currentFunction}`;
+      }
+
+      // 像素坐标转数学坐标
+      function pixelToMath(pixelX, pixelY) {
+        return {
+          x: (pixelX - centerX) / scale,
+          y: (centerY - pixelY) / scale,
+        };
+      }
+
+      // 数学坐标转像素坐标
+      function mathToPixel(mathX, mathY) {
+        return {
+          x: centerX + mathX * scale,
+          y: centerY - mathY * scale,
+        };
+      }
+
+      // 查找点击的点
+      function findPointAt(pixelX, pixelY) {
+        for (let i = 0; i < points.length; i++) {
+          const point = points[i];
+          const pixel = mathToPixel(point.x, point.y);
+          const distance = Math.sqrt(
+            (pixelX - pixel.x) ** 2 + (pixelY - pixel.y) ** 2
+          );
+          if (distance <= 8) {
+            return i;
+          }
+        }
+        return -1;
+      }
+
+      // 画布事件处理
+      functionCanvas.addEventListener("mousedown", (e) => {
+        const rect = functionCanvas.getBoundingClientRect();
+        const pixelX = e.clientX - rect.left;
+        const pixelY = e.clientY - rect.top;
+
+        const pointIndex = findPointAt(pixelX, pixelY);
+
+        if (e.button === 2) {
+          // 右键删除点
+          if (pointIndex !== -1) {
+            points.splice(pointIndex, 1);
+            updateFunctionDisplay();
+            drawCanvas();
+          }
+          e.preventDefault();
+          return;
+        }
+
+        if (pointIndex !== -1) {
+          // 开始拖拽
+          draggedPoint = pointIndex;
+        } else {
+          // 添加新点
+          const mathCoord = pixelToMath(pixelX, pixelY);
+          points.push({
+            x: Math.round(mathCoord.x),
+            y: Math.round(mathCoord.y),
+          });
+          updateFunctionDisplay();
+          drawCanvas();
+        }
+      });
+
+      functionCanvas.addEventListener("mousemove", (e) => {
+        const rect = functionCanvas.getBoundingClientRect();
+        const pixelX = e.clientX - rect.left;
+        const pixelY = e.clientY - rect.top;
+
+        if (draggedPoint !== null) {
+          const mathCoord = pixelToMath(pixelX, pixelY);
+          points[draggedPoint] = {
+            x: Math.round(mathCoord.x),
+            y: Math.round(mathCoord.y),
+          };
+          updateFunctionDisplay();
+          drawCanvas();
+        }
+
+        // 显示坐标信息
+        const mathCoord = pixelToMath(pixelX, pixelY);
+        pointInfo.textContent = `(${mathCoord.x.toFixed(
+          0
+        )}, ${mathCoord.y.toFixed(0)})`;
+        pointInfo.style.left = e.clientX + 10 + "px";
+        pointInfo.style.top = e.clientY - 30 + "px";
+        pointInfo.style.display = "block";
+      });
+
+      functionCanvas.addEventListener("mouseup", () => {
+        draggedPoint = null;
+      });
+
+      functionCanvas.addEventListener("mouseleave", () => {
+        draggedPoint = null;
+        pointInfo.style.display = "none";
+      });
+
+      functionCanvas.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+      });
+
+      // 控制按钮事件
+      clearPointsBtn.addEventListener("click", () => {
+        points = [];
+        updateFunctionDisplay();
+        drawCanvas();
+      });
+
+      resetViewBtn.addEventListener("click", () => {
+        points = [];
+        currentFunction = "x";
+        updateFunctionDisplay();
+        drawCanvas();
+      });
+
+      applyFunctionBtn.addEventListener("click", () => {
+        mathFunctionInput.value = currentFunction;
+        closeFunctionEditorModal();
+      });
+
+      // 编辑器事件监听
+      editFunctionBtn.addEventListener("click", openFunctionEditor);
+      closeFunctionEditor.addEventListener("click", closeFunctionEditorModal);
+
+      // 点击模态框背景关闭
+      functionEditorModal.addEventListener("click", (e) => {
+        if (e.target === functionEditorModal) {
+          closeFunctionEditorModal();
+        }
+      });
     </script>
   </body>
 </html>
