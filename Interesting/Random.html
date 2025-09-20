@@ -106,7 +106,7 @@
         width: calc(10% - 8px);
         height: calc(12.5% - 8px);
         background-color: rgba(255, 255, 255, 0.2);
-        border: 3px solid #667eea;
+        border: 3px solid #F8CF01;
         border-radius: 6px;
         box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -489,6 +489,35 @@
         let intervalId = null;
         let currentSeat = null;
 
+        // 加载保存的状态
+        function loadSavedState() {
+          const savedData = localStorage.getItem('seatRandomizerState');
+          if (savedData) {
+            try {
+              const data = JSON.parse(savedData);
+              if (data.rows && data.cols) {
+                rows = data.rows;
+                cols = data.cols;
+              }
+              if (data.skippedSeats) {
+                skippedSeats = new Set(data.skippedSeats);
+              }
+            } catch (e) {
+              console.log('加载保存状态失败:', e);
+            }
+          }
+        }
+
+        // 保存当前状态
+        function saveState() {
+          const stateData = {
+            rows: rows,
+            cols: cols,
+            skippedSeats: Array.from(skippedSeats)
+          };
+          localStorage.setItem('seatRandomizerState', JSON.stringify(stateData));
+        }
+
         // 更新教室网格样式
         function updateClassroomGrid() {
           classroom.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
@@ -504,7 +533,7 @@
         function createSeats() {
           classroom.innerHTML = "";
           seats = [];
-          skippedSeats.clear();
+          // 不清空 skippedSeats，保持已保存的跳过状态
 
           // 更新网格布局
           updateClassroomGrid();
@@ -516,6 +545,12 @@
               seat.dataset.row = row;
               seat.dataset.col = col;
               seat.textContent = `${row + 1}-${col + 1}`;
+              
+              // 检查是否是跳过的座位
+              const index = row * cols + col;
+              if (skippedSeats.has(index)) {
+                seat.classList.add("skipped");
+              }
 
               seat.addEventListener("click", () => toggleSkipSeat(seat));
 
@@ -541,6 +576,9 @@
             skippedSeats.add(index);
             seat.classList.add("skipped");
           }
+          
+          // 自动保存状态
+          saveState();
         }
 
         // 更新滑块位置
@@ -549,9 +587,8 @@
 
           const seatIndex = col * cols + row;
           currentSeat = seats[seatIndex];
+          slider.style.transform = `translate(${currentSeat.offsetLeft - 2}px, ${currentSeat.offsetTop - 2}px)`;
           currentSeat.classList.add("selected");
-          console.dir(currentSeat);
-          slider.style.transform = `translate(${currentSeat.offsetLeft}px, ${currentSeat.offsetTop}px)`;
 
           currentSeatElement.textContent = `当前座位: ${row + 1}排${col + 1}列`;
         }
@@ -606,6 +643,9 @@
         function resetSkippedSeats() {
           skippedSeats.clear();
           seats.forEach((seat) => seat.classList.remove("skipped"));
+          
+          // 自动保存状态
+          saveState();
         }
 
         // 弹窗相关函数
@@ -643,6 +683,9 @@
           rows = newRows;
           cols = newCols;
           createSeats();
+          
+          // 自动保存状态
+          saveState();
 
           closeSettingsModal();
         }
@@ -673,6 +716,7 @@
         });
 
         // 初始化
+        loadSavedState(); // 加载保存的状态
         createSeats();
         stopBtn.disabled = true;
       });
